@@ -63,18 +63,23 @@ func scan(args []string, stdout, stderr io.Writer) error {
 	if flags.NArg() == 1 {
 		path = flags.Arg(0)
 	}
-	manifest, err := fingerprint.Scan(path, fingerprint.Options{
+	options := fingerprint.Options{
 		IgnorePatterns: patterns,
 		IgnoreFile:     *ignoreFile,
 		UseDefaults:    !*noDefaultIgnore,
 		IncludeEntries: !*hashOnly,
-	})
-	if err != nil {
-		return err
 	}
 	if *hashOnly {
-		fmt.Fprintln(stdout, manifest.RootHash)
+		hash, err := fingerprint.Hash(path, options)
+		if err != nil {
+			return err
+		}
+		fmt.Fprintln(stdout, hash)
 		return nil
+	}
+	manifest, err := fingerprint.Scan(path, options)
+	if err != nil {
+		return err
 	}
 	return writeJSON(stdout, manifest)
 }

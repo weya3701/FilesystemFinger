@@ -64,6 +64,24 @@ func TestMetadataDoesNotAffectHash(t *testing.T) {
 	}
 }
 
+func TestHashReturnsOnlyRootHash(t *testing.T) {
+	root := t.TempDir()
+	writeFile(t, filepath.Join(root, "file.txt"), "content")
+	writeFile(t, filepath.Join(root, ".DS_Store"), "ignored")
+
+	hash, err := Hash(root, Options{
+		UseDefaults:    true,
+		IncludeEntries: true,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	manifest := mustScan(t, root)
+	if hash != manifest.RootHash {
+		t.Fatalf("Hash() = %q, want %q", hash, manifest.RootHash)
+	}
+}
+
 func TestSymlinkTargetIsHashedWithoutFollowing(t *testing.T) {
 	root := t.TempDir()
 	writeFile(t, filepath.Join(root, "one"), "same")

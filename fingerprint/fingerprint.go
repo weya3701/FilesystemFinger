@@ -42,6 +42,18 @@ type child struct {
 	digest [sha256.Size]byte
 }
 
+// Hash returns only the deterministic SHA-256 fingerprint of a file,
+// directory tree, or symbolic link. It applies the same ignore options as
+// Scan and does not collect manifest entries.
+func Hash(path string, options Options) (string, error) {
+	options.IncludeEntries = false
+	manifest, err := Scan(path, options)
+	if err != nil {
+		return "", err
+	}
+	return manifest.RootHash, nil
+}
+
 func Scan(path string, options Options) (Manifest, error) {
 	absolute, err := filepath.Abs(path)
 	if err != nil {

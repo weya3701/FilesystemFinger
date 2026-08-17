@@ -22,6 +22,42 @@ go build -o fsfinger ./cmd/fsfinger
 Write the manifest outside the scanned directory, or ignore its path, so the
 output does not become part of the next scan.
 
+## Use as a Go module
+
+Add the module to another Go project:
+
+```sh
+go get github.com/ccxn/filesystemfinger
+```
+
+Call `fingerprint.Hash` to scan a file, directory tree, or symbolic link and
+return only the hash, equivalent to `fsfinger scan --hash-only`:
+
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+
+	"github.com/ccxn/filesystemfinger/fingerprint"
+)
+
+func main() {
+	hash, err := fingerprint.Hash("/path/to/directory", fingerprint.Options{
+		UseDefaults: true,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(hash)
+}
+```
+
+Set `IgnorePatterns` or `IgnoreFile` in `fingerprint.Options` when custom ignore
+rules are needed. Use `fingerprint.Scan` instead when the complete JSON-ready
+manifest and individual entries are required.
+
 ## Ignore rules
 
 Built-in rules ignore `.git/`, `.DS_Store`, `Thumbs.db`, `*.swp`, and `*~`.

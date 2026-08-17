@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/ccxn/filesystemfinger/fingerprint"
@@ -40,6 +41,26 @@ func TestScanAndVerify(t *testing.T) {
 	}
 	if !result.Match {
 		t.Fatal("unchanged directory did not verify")
+	}
+}
+
+func TestScanHashOnly(t *testing.T) {
+	root := t.TempDir()
+	if err := os.WriteFile(filepath.Join(root, "hello.txt"), []byte("hello"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	want, err := fingerprint.Hash(root, fingerprint.Options{UseDefaults: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	if err := run([]string{"scan", "--hash-only", root}, &stdout, &stderr); err != nil {
+		t.Fatalf("scan --hash-only failed: %v (%s)", err, stderr.String())
+	}
+	if got := strings.TrimSpace(stdout.String()); got != want {
+		t.Fatalf("hash-only output = %q, want %q", got, want)
 	}
 }
 
