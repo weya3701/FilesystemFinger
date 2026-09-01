@@ -3,3 +3,5 @@ module github.com/ccxn/filesystemfinger
 go 1.25
 
 require golang.org/x/text v0.28.0
+
+replace golang.org/x/text => ./projectPackages/golang.org/x/text@v0.28.0
