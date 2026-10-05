@@ -1,14 +1,12 @@
 # FilesystemFinger
 
-`fsfinger` creates deterministic SHA-256 fingerprints for files and directory
-trees. A directory fingerprint changes when a relative path, object type,
-symlink target, empty directory, or file content changes. Moving the scanned
-root itself does not change the fingerprint.
+`fsfinger` 可為檔案與目錄樹建立具確定性的 SHA-256 指紋。當相對路徑、物件類型、
+符號連結目標、空目錄或檔案內容發生變更時，目錄指紋也會隨之改變；但僅移動掃描
+根目錄本身的位置，並不會改變指紋。
 
-Metadata such as permissions and modification time is included in the JSON
-manifest for inspection, but never contributes to the root hash.
+權限與修改時間等中繼資料會包含在 JSON 清單中供檢查，但不會參與根雜湊值的計算。
 
-## Build and use
+## 建置與使用
 
 ```sh
 go build -o fsfinger ./cmd/fsfinger
@@ -19,19 +17,19 @@ go build -o fsfinger ./cmd/fsfinger
 ./fsfinger verify --manifest manifest.json /path/to/directory
 ```
 
-Write the manifest outside the scanned directory, or ignore its path, so the
-output does not become part of the next scan.
+請將清單寫入受掃描目錄以外的位置，或忽略其路徑，以免輸出檔案成為下次掃描內容的
+一部分。
 
-## Use as a Go module
+## 作為 Go 模組使用
 
-Add the module to another Go project:
+將此模組加入其他 Go 專案：
 
 ```sh
 go get github.com/ccxn/filesystemfinger
 ```
 
-Call `fingerprint.Hash` to scan a file, directory tree, or symbolic link and
-return only the hash, equivalent to `fsfinger scan --hash-only`:
+呼叫 `fingerprint.Hash` 可掃描檔案、目錄樹或符號連結，並僅回傳雜湊值；其效果等同
+於 `fsfinger scan --hash-only`：
 
 ```go
 package main
@@ -54,24 +52,23 @@ func main() {
 }
 ```
 
-Set `IgnorePatterns` or `IgnoreFile` in `fingerprint.Options` when custom ignore
-rules are needed. Use `fingerprint.Scan` instead when the complete JSON-ready
-manifest and individual entries are required.
+如需自訂忽略規則，可在 `fingerprint.Options` 中設定 `IgnorePatterns` 或
+`IgnoreFile`。若需要可直接轉換為 JSON 的完整清單及個別項目，請改用
+`fingerprint.Scan`。
 
-## Ignore rules
+## 忽略規則
 
-Built-in rules ignore `.git/`, `.DS_Store`, `Thumbs.db`, `*.swp`, and `*~`.
-Add repeatable patterns with `--ignore`, load rules from a file with
-`--ignore-file`, or disable defaults with `--no-default-ignore`.
+內建規則會忽略 `.git/`、`.DS_Store`、`Thumbs.db`、`*.swp` 與 `*~`。可重複使用
+`--ignore` 加入多個模式、透過 `--ignore-file` 從檔案載入規則，或使用
+`--no-default-ignore` 停用預設規則。
 
-Patterns use `/` separators on every platform. `*` matches within a path
-segment, `**` spans directories, `?` matches one character, a trailing `/`
-matches directories only, and a leading `!` negates an earlier rule.
+所有平台上的模式一律使用 `/` 作為分隔符號。`*` 會比對單一路徑區段內的字元，
+`**` 可跨越多層目錄，`?` 會比對一個字元，結尾的 `/` 僅比對目錄，而開頭的 `!`
+則會取消先前的規則。
 
-## Stable format
+## 穩定格式
 
-Names and symlink targets are normalized to Unicode NFC and paths use `/`.
-Directory children are sorted by normalized UTF-8 bytes. Canonical records are
-length-prefixed, use big-endian lengths, and are domain-separated with the
-`filesystem-fingerprint-v1` format identifier. Files are hashed as their exact
-bytes; line endings are not rewritten. Symlinks are not followed.
+名稱與符號連結目標會正規化為 Unicode NFC，路徑則使用 `/`。目錄中的子項目會依
+正規化後的 UTF-8 位元組排序。標準記錄會加上長度前綴、採用大端序長度，並以
+`filesystem-fingerprint-v1` 格式識別碼進行域分隔。檔案會完全依照原始位元組計算
+雜湊，不會改寫行尾字元；掃描時也不會跟隨符號連結。
